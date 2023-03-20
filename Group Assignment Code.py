@@ -12,6 +12,23 @@ import numpy as np
 import pandas as pd
 import seaborn as sb
 import matplotlib.pyplot as plt 
+import math
 sb.set()
 np.set_printoptions(suppress=True)
-data = pd.read_csv('movies.csv')
+pd.options.display.float_format = '{:,.5f}'.format
+
+data = pd.read_csv("movies.csv")
+xvarlist = ["genre", "score", "votes", "director", "writer", "star", "budget", "runtime"]
+allvarlist = xvarlist + ["gross"]
+catvarlist = ["genre", "director", "writer", "star"]
+
+cleandata = data.dropna()
+cleandata = cleandata[allvarlist]
+
+catdictofdict = {}
+for var in listofcatvar:
+    catdictofdict[var] = dict(cleandata.groupby(var)['gross'].mean())
+    cleandata[var].replace(to_replace = catdictofdict[var], inplace = True)
+     
+cleandata
+
