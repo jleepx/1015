@@ -14,4 +14,4 @@ import seaborn as sb
 import matplotlib.pyplot as plt 
 sb.set()
 np.set_printoptions(suppress=True)
-data = pd.read_csv('movie.csv')
+data = pd.read_csv('movies.csv')
