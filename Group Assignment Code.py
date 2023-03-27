@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import math
 sb.set()
 np.set_printoptions(suppress=True)
-pd.options.display.float_format = '{:,.5f}'.format
+pd.options.display.float_format = '{:,.8f}'.format
 
 data = pd.read_csv("movies.csv")
 xvarlist = ["genre", "score", "votes", "director", "writer", "star", "budget", "runtime"]
@@ -26,9 +26,43 @@ cleandata = data.dropna()
 cleandata = cleandata[allvarlist]
 
 catdictofdict = {}
-for var in listofcatvar:
+for var in catvarlist:
     catdictofdict[var] = dict(cleandata.groupby(var)['gross'].mean())
     cleandata[var].replace(to_replace = catdictofdict[var], inplace = True)
-     
-cleandata
+    
+cleandata["profit"] = cleandata["gross"] - cleandata["budget"]
 
+
+
+#to predict profit 
+lm1 = ols("profit ~ genre + score + votes + director + writer + star + budget + runtime", cleandata).fit()
+print("Linear model 1 summary")
+print(lm1.summary())
+print("p-values")
+print(lm1.pvalues)
+print("")
+print("coefficients")
+print(lm1.params)
+print("")
+
+#same as lm1 but excluding categorical variables
+lm2 = ols("profit ~ score + votes + budget + runtime", cleandata).fit()
+print("Linear model 2 summary")
+print(lm2.summary())
+print("p-values")
+print(lm2.pvalues)
+print("")
+print("coefficients")
+print(lm2.params)
+print("")
+
+#to estimate budget needed to attain a desired profit
+lm3 = ols("budget ~ genre + score + votes + director + writer + star + runtime + profit", cleandata).fit()
+print("Linear model 3 summary")
+print(lm3.summary())
+print("p-values")
+print(lm3.pvalues)
+print("")
+print("coefficients")
+print(lm3.params)
+print("")
