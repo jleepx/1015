@@ -90,3 +90,32 @@ for i in range(7):
     else:
         print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(alltestdata[["budget"]], lm[i].predict(exog = alltestdata)))
     print("")
+    
+
+f, axs = plt.subplots(7,2, figsize = (16,40))
+
+for i in range(7):
+    for j in range(2):
+        if (j == 0):
+            exogdata = alltraindata
+            s = "Train"
+        else:
+            exogdata = alltestdata
+            s = "Test"
+        
+        if (i < 3):
+            response = "profit"
+        elif (3 <= i < 6):
+            response = "gross"
+        else:
+            response = "budget"
+            
+        responsetrue = exogdata[[response]]
+        responsepredict = pd.DataFrame(lm[i].predict(exog = exogdata))
+
+        axs[i,j].plot(responsetrue,responsepredict, "xr")
+        axs[i,j].plot(responsetrue,responsetrue,'-c',linewidth=1)
+        axs[i,j].set(title = "Graph of Predicted {r} Against True {r} for {t} Set".format(r = response, t = s), autoscale_on = True, xlabel = "True {r}".format(r = response), ylabel = "Predicted {r}".format(r = response))
+
+
+
