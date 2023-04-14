@@ -23,84 +23,69 @@ allvarlist = xvarlist + ["gross"] + ["profit"]
 catvarlist = ["genre", "director", "writer", "star"]
 
 data["profit"] = data["gross"] - data["budget"]
-cleandata = data.dropna()
-cleandata = cleandata[allvarlist]
+cleanoridata = data.dropna()
+cleanoridata = cleanoridata[allvarlist]
 
 catdictofdict = {}
 for var in catvarlist:
     catdictofdict[var] = dict(cleandata.groupby(var)['gross'].mean())
     cleandata[var].replace(to_replace = catdictofdict[var], inplace = True)
     
+f = plt.figure(figsize=(12, 12))
+f.suptitle("Correlation Matrix Heatmap")
+sb.heatmap(cleandata.corr(), vmin = -1, vmax = 1, annot = True, fmt = ".2f")
+
+
+boxplot = cleanoridata[(cleanoridata["director"] == "Clint Eastwood") | (cleanoridata["director"] == "Woody Allen" )|(cleanoridata["director"] == "Steven Spielberg" )|(cleanoridata["director"] == "Ron Howard" )]
+sb.catplot(data = boxplot, x = 'director', y = 'gross', kind = "box")
+boxplot2 = cleanoridata[(cleanoridata["star"] == "Nicolas Cage") | (cleanoridata["star"] == "Tom Hanks" )|(cleanoridata["star"] == "Robert De Niro" )|(cleanoridata["star"] == "Bruce Willis" )]
+sb.catplot(data = boxplot2, x = 'star', y = 'gross', kind = "box")
+boxplot3 = cleanoridata[(cleanoridata["writer"] == "John Hughes") | (cleanoridata["writer"] == "Luc Besson" )|(cleanoridata["writer"] == "Joel Coen" )|(cleanoridata["writer"] == "Woody Allen" )]
+sb.catplot(data = boxplot3, x = 'writer', y = 'gross', kind = "box")
+
+sb.catplot(data = boxplot, x = 'director', y = 'profit', kind = "box")
+sb.catplot(data = boxplot2, x = 'star', y = 'profit', kind = "box")
+sb.catplot(data = boxplot3, x = 'writer', y = 'profit', kind = "box")
+
 xtraindata, xtestdata, grosstraindata, grosstestdata, profittraindata, profittestdata = train_test_split(cleandata[xvarlist], cleandata[["gross"]], cleandata[["profit"]], test_size = 0.2)
-lm1data = pd.concat([xtraindata, profittraindata], axis = 1)
+alltraindata = pd.concat([xtraindata, grosstraindata, profittraindata], axis = 1)
 alltestdata = pd.concat([xtestdata, grosstestdata, profittestdata], axis = 1)
 
+lm = []
+lmdescript = []
 
-#to predict profit 
-lm1 = ols("profit ~ genre + score + votes + director + writer + star + budget + runtime", lm1data).fit()
-print("Linear model 1 summary")
-print(lm1.summary())
-print("p-values")
-print(lm1.pvalues)
-print("")
-print("coefficients")
-print(lm1.params)
-print("")
-print("R-squared (Goodness of Fit): ", lm1.rsquared)
-print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(profittestdata, lm1.predict(exog = xtestdata)))
-print("")
+lmdescript.append("Linear Model 0: to predict profit using genre, score, votes, director, writer, star, budget, runtime as indepedent variables") 
+lm.append(ols("profit ~ genre + score + votes + director + writer + star + budget + runtime", alltraindata).fit())
+lmdescript.append("Linear Model 1: same as Linear Model 0 but excluding categorical variables director, writer, star")
+lm.append(ols("profit ~ score + votes + budget + runtime", alltraindata).fit())
+lmdescript.append("Linear Model 2: same as Linear Model 0 but excluding numerical variables")
+lm.append(ols("profit ~ director + writer + star", alltraindata).fit())
+lmdescript.append("Linear Model 3: same as Linear Model 0 but predicting gross revenue instead of budget")
+lm.append(ols("gross ~ genre + score + votes + director + writer + star + budget + runtime", alltraindata).fit())
+lmdescript.append("Linear Model 4: same as Linear Model 1 but predicting gross revenue instead of budget")
+lm.append(ols("gross ~ score + votes + budget + runtime", alltraindata).fit())
+lmdescript.append("Linear Model 5: same as Linear Model 2 but predicting gross revenue instead of budget")
+lm.append(ols("gross ~ director + writer + star", alltraindata).fit())
+lmdescript.append("Linear Model 6: to estimate budget needed to attain a desired profit")
+lm.append(ols("budget ~ genre + score + votes + director + writer + star + runtime + profit", alltraindata).fit())
 
-#same as lm1 but excluding categorical variables
-lm2 = ols("profit ~ score + votes + budget + runtime", lm1data).fit()
-print("Linear model 2 summary")
-print(lm2.summary())
-print("p-values")
-print(lm2.pvalues)
-print("")
-print("coefficients")
-print(lm2.params)
-print("")
-print("R-squared (Goodness of Fit): ", lm2.rsquared)
-print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(profittestdata, lm2.predict(exog = xtestdata[["score", "votes", "budget", "runtime"]])))
-print("")
-
-#to estimate budget needed to attain a desired profit
-lm3 = ols("budget ~ genre + score + votes + director + writer + star + runtime + profit", lm1data).fit()
-print("Linear model 3 summary")
-print(lm3.summary())
-print("p-values")
-print(lm3.pvalues)
-print("")
-print("coefficients")
-print(lm3.params)
-print("")
-print("R-squared (Goodness of Fit): ", lm3.rsquared)
-print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(xtestdata[["budget"]], lm3.predict(exog = alltestdata[["genre", "score", "votes", "director", "writer", "star", "runtime", "profit"]])))
-print("")
-
-#same as lm1 but using gross as dependent variable
-lm4data = pd.concat([xtraindata, grosstraindata], axis = 1)
-lm4 = ols("gross ~ genre + score + votes + director + writer + star + budget + runtime", lm4data).fit()
-print("Linear model 4 summary")
-print(lm4.summary())
-print("p-values")
-print(lm4.pvalues)
-print("")
-print("coefficients")
-print(lm4.params)
-print("")
-print("R-squared (Goodness of Fit): ", lm4.rsquared)
-print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(grosstestdata, lm4.predict(exog = xtestdata)))
-print("")
-
-grosstestpredict = pd.DataFrame(lm4.predict(exog = xtestdata))
-f, axes = plt.subplots()
-df = pd.concat([grosstestdata, grosstestpredict], axis = 1)
-axes.scatter(grosstestdata,grosstestpredict)
-axes.plot(grosstestdata,grosstestdata,'w-',linewidth=1)
-
-profittestpredict = pd.DataFrame(lm4.predict(exog = xtestdata))
-f, axes = plt.subplots()
-df = pd.concat([profittestdata, profittestpredict], axis = 1)
-axes.scatter(profittestdata,profittestpredict)
-axes.plot(profittestdata,profittestdata,'w-',linewidth=1)
+for i in range(7):
+    print(lmdescript[i])
+    print("Linear model {} summary".format(i))
+    print(lm[i].summary())
+    print("")
+    print("p-values")
+    print(lm[i].pvalues)
+    print("")
+    print("coefficients")
+    print(lm[i].params)
+    print("")
+    print("R-squared (Goodness of Fit): ", lm[i].rsquared)
+    
+    if (i < 3):
+        print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(profittestdata, lm[i].predict(exog = alltestdata)))
+    elif (3 <= i < 6):
+        print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(grosstestdata, lm[i].predict(exog = alltestdata)))
+    else:
+        print("Mean Squared Error (Prediction Accuracy): ", mean_squared_error(alltestdata[["budget"]], lm[i].predict(exog = alltestdata)))
+    print("")
