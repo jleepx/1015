@@ -25,6 +25,7 @@ catvarlist = ["genre", "director", "writer", "star"]
 data["profit"] = data["gross"] - data["budget"]
 cleanoridata = data.dropna()
 cleanoridata = cleanoridata[allvarlist]
+cleandata = cleanoridata.copy()
 
 catdictofdict = {}
 for var in catvarlist:
