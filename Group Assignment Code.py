@@ -123,5 +123,3 @@ for i in range(9):
         axs[i,j].plot(responsetrue,responsetrue,'-c',linewidth=1)
         axs[i,j].set(title = "Graph of Predicted {r} Against True {r} for {t} Set (Using Linear Model {k})".format(r = response, t = s, k = i), autoscale_on = True, xlabel = "True {r}".format(r = response), ylabel = "Predicted {r}".format(r = response))
 
-
-h
