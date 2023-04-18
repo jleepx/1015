@@ -9,9 +9,13 @@ The second part focuses on the linear regression. We split cleandata into 20% te
 In the last part, for each of our linear models, for both training and testing data sets, we used scatter plots to visualise a graph of predicted response against the true response, together with the control line y = x to help us better visually estimate each model’s general prediction accuracy.
 
 Contributions:
+
 Jace - conversion of categorical variables into numerical ones, fitting of linear models, displaying results of linear models, visualising prediction accuracy of linear models, results analysis, derivation of data-driven insights and recommendations
+
 Ye Wint - Edited and made the videos and slides. Did the heat map correlation matrix and find data sets. Come up with the idea for logistic regression for things we implement beyond the course syllabus. Did the practical motivations and conclusion of outcome and interesting findings.
+
 Joel - removing of null values in dataset, data exploration and visualisation of dataset, implementation of logistic regression
 
 References:
+
 Walker, S. H., & Duncan, D. R. (1967). Estimation of the Probability of an Event as a Function of Several Independent Variables. Biometrika, 54(1/2), 167. https://doi.org/10.2307/2333860
