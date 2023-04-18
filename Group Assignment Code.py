@@ -123,3 +123,46 @@ for i in range(9):
         axs[i,j].plot(responsetrue,responsepredict, "xr")
         axs[i,j].plot(responsetrue,responsetrue,'-c',linewidth=1)
         axs[i,j].set(title = "Graph of Predicted {r} Against True {r} for {t} Set (Using Linear Model {k})".format(r = response, t = s, k = i), autoscale_on = True, xlabel = "True {r}".format(r = response), ylabel = "Predicted {r}".format(r = response))
+
+# create a binary target variable based on whether gross is at least 3 times the budget
+cleandata["successful"] = (cleandata["gross"] >= 3 * cleandata["budget"]).astype(int)
+
+# split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(cleandata[xvarlist], cleandata["successful"], test_size=0.3, random_state=42)
+
+# fit a logistic regression model to the training data
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+
+# predict the probabilities of the test set
+y_pred_proba = logreg.predict_proba(X_test)[:, 1]
+
+# print the average predicted probability of gross being at least 3x budget
+print("Average predicted probability of gross being at least 3x budget:", y_pred_proba.mean())
+
+# create a binary variable indicating whether the profit is at least 3x the budget
+cleanoridata["successful"] = (cleanoridata["profit"] >= 2 * cleanoridata["budget"]).astype(int)
+
+# create dummy variables for the "genre" variable
+genre_dummies = pd.get_dummies(cleanoridata["genre"], prefix="genre")
+
+# concatenate the genre dummies with the profit_3x_budget variable
+X = pd.concat([genre_dummies, cleanoridata["budget"]], axis=1)
+y = cleanoridata["successful"]
+
+# split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# fit a logistic regression model to predict the probability of profit_3x_budget
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+
+# predict the probability of profit_3x_budget for the testing set
+y_pred = logreg.predict_proba(X_test)[:, 1]
+
+# print out the mean accuracy
+print("The overall classification accuracy \t\t: ",logreg.score(X_test,y_test))
+
+# display the predicted probabilities for each genre
+for i, col in enumerate(genre_dummies.columns):
+    print(f"Probability of profit_3x_budget for {col}: {np.mean(y_pred[X_test[col] == 1])}")
